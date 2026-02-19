@@ -267,12 +267,19 @@ fun TranslationScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                             .clickable {
                                 try {
                                     val intent = Intent(Intent.ACTION_VIEW).apply {
-                                        setDataAndType(Uri.parse(job.outputPath), "resource/folder")
+                                        setDataAndType(
+                                            Uri.parse(job.outputPath),
+                                            "vnd.android.document/directory"
+                                        )
                                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                     }
                                     context.startActivity(intent)
                                 } catch (_: Exception) {
-                                    // No file manager available
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        "No file manager available to open directory",
+                                        android.widget.Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             }
                     ) {
