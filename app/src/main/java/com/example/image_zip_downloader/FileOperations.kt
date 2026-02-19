@@ -68,11 +68,10 @@ object FileOperations {
         }
     }
 
-    fun extractZipToUri(context: Context, zipFile: File, outputDirUri: Uri): String {
+    fun extractZipToUri(context: Context, zipFile: File, outputDirUri: Uri, folderName: String): String {
         val contentResolver = context.contentResolver
 
-        // Create a subdirectory named after the zip file (without extension)
-        val baseName = zipFile.nameWithoutExtension
+        val baseName = folderName
         val outputDocUri = DocumentsContract.buildDocumentUriUsingTree(
             outputDirUri,
             DocumentsContract.getTreeDocumentId(outputDirUri)

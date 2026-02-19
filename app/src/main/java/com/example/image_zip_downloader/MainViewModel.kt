@@ -113,7 +113,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 // Step 6: Extract
                 currentStatus = "Extracting..."
                 val outputPath = withContext(Dispatchers.IO) {
-                    FileOperations.extractZipToUri(getApplication(), downloadedZip, outUri)
+                    FileOperations.extractZipToUri(getApplication(), downloadedZip, outUri, selectedFolderName)
                 }
 
                 // Step 7: Cleanup
