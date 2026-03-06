@@ -18,6 +18,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val apiService = TranslatorApiService()
     private val jobRepository = JobRepository(application)
+    private val userPrefs = UserPreferences(application)
 
     var email by mutableStateOf("")
     var password by mutableStateOf("")
@@ -37,6 +38,37 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         jobs = jobRepository.getJobs()
+
+        // Restore saved directories
+        userPrefs.getSourceFolderUri()?.let { uriStr ->
+            selectedFolderUri = Uri.parse(uriStr)
+            selectedFolderName = userPrefs.getSourceFolderName()
+        }
+        userPrefs.getOutputDirUri()?.let { uriStr ->
+            outputDirUri = Uri.parse(uriStr)
+            outputDirName = userPrefs.getOutputDirName()
+        }
+
+        // Restore saved credentials and auto-login
+        val savedEmail = userPrefs.getEmail()
+        val savedPassword = userPrefs.getPassword()
+        if (savedEmail.isNotBlank() && savedPassword.isNotBlank()) {
+            email = savedEmail
+            password = savedPassword
+            login()
+        }
+    }
+
+    fun setSourceFolder(uri: Uri, name: String) {
+        selectedFolderUri = uri
+        selectedFolderName = name
+        userPrefs.saveSourceFolder(uri.toString(), name)
+    }
+
+    fun setOutputDir(uri: Uri, name: String) {
+        outputDirUri = uri
+        outputDirName = name
+        userPrefs.saveOutputDir(uri.toString(), name)
     }
 
     fun login() {
@@ -52,6 +84,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 refreshToken = response.tokens.refreshToken
                 isLoggedIn = true
                 currentStatus = ""
+                userPrefs.saveCredentials(email, password)
             } catch (e: Exception) {
                 errorMessage = "Login failed: ${e.message}"
                 currentStatus = ""

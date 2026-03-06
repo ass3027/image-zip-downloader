@@ -147,8 +147,7 @@ fun TranslationScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                 it,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION
             )
-            viewModel.selectedFolderUri = it
-            viewModel.selectedFolderName = extractDisplayName(it)
+            viewModel.setSourceFolder(it, extractDisplayName(it).split("/").last())
         }
     }
 
@@ -160,8 +159,7 @@ fun TranslationScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                 it,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             )
-            viewModel.outputDirUri = it
-            viewModel.outputDirName = extractDisplayName(it)
+            viewModel.setOutputDir(it, extractDisplayName(it))
         }
     }
 
