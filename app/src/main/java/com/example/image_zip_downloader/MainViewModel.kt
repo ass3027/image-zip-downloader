@@ -19,6 +19,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val apiService = TranslatorApiService()
     private val jobRepository = JobRepository(application)
     private val userPrefs = UserPreferences(application)
+    private val notificationHelper = NotificationHelper(application)
 
     var email by mutableStateOf("")
     var password by mutableStateOf("")
@@ -134,6 +135,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         apiService.getStatus(accessToken, refreshToken, jobId)
                     }
                     currentStatus = "Translating (${statusResponse.translatedImageCount}/${statusResponse.totalImageCount})..."
+                    notificationHelper.showProgress(statusResponse.translatedImageCount, statusResponse.totalImageCount, selectedFolderName)
                 }
 
                 // Step 5: Download
@@ -171,9 +173,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 jobs = jobRepository.getJobs()
 
                 currentStatus = "Done!"
+                notificationHelper.showCompletion(selectedFolderName)
             } catch (e: Exception) {
                 errorMessage = "Translation failed: ${e.message}"
                 currentStatus = ""
+                notificationHelper.cancel()
             } finally {
                 isProcessing = false
             }
