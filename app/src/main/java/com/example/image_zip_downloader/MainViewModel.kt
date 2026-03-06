@@ -35,6 +35,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var currentStatus by mutableStateOf("")
     var jobs by mutableStateOf(listOf<Job>())
     var errorMessage by mutableStateOf<String?>(null)
+    var fileCountLimit by mutableStateOf("")
 
     init {
         jobs = jobRepository.getJobs()
@@ -77,14 +78,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             errorMessage = null
             currentStatus = "Logging in..."
             try {
+                val currentEmail = email
+                val currentPassword = password
                 val response = withContext(Dispatchers.IO) {
-                    apiService.login(email, password)
+                    apiService.login(currentEmail, currentPassword)
                 }
                 accessToken = response.tokens.accessToken
                 refreshToken = response.tokens.refreshToken
                 isLoggedIn = true
                 currentStatus = ""
-                userPrefs.saveCredentials(email, password)
+                userPrefs.saveCredentials(currentEmail, currentPassword)
             } catch (e: Exception) {
                 errorMessage = "Login failed: ${e.message}"
                 currentStatus = ""
@@ -105,7 +108,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 // Step 1: Zip
                 currentStatus = "Zipping images..."
                 val zipFile = withContext(Dispatchers.IO) {
-                    FileOperations.zipFolder(getApplication(), folderUri)
+                    val limit = fileCountLimit.toIntOrNull()
+                    FileOperations.zipFolder(getApplication(), folderUri, limit)
                 }
 
                 // Step 2: SHA-1

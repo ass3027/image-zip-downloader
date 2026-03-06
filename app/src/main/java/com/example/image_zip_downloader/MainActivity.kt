@@ -2,6 +2,7 @@ package com.example.image_zip_downloader
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.DocumentsContract
@@ -35,7 +36,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.image_zip_downloader.ui.theme.ImagezipdownloaderTheme
@@ -210,6 +213,18 @@ fun TranslationScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                 Text("Browse")
             }
         }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // File count limit
+        OutlinedTextField(
+            value = viewModel.fileCountLimit,
+            onValueChange = { viewModel.fileCountLimit = it },
+            label = { Text("File Count Limit (empty = all)") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Spacer(modifier = Modifier.height(20.dp))
 

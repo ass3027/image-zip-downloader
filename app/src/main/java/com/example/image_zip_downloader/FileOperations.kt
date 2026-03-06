@@ -12,38 +12,46 @@ import java.util.zip.ZipOutputStream
 
 object FileOperations {
 
-    fun zipFolder(context: Context, folderUri: Uri): File {
+    fun zipFolder(context: Context, folderUri: Uri, maxFiles: Int? = null): File {
         val zipFile = File(context.cacheDir, "upload_${System.currentTimeMillis()}.zip")
         val contentResolver = context.contentResolver
 
-        ZipOutputStream(FileOutputStream(zipFile)).use { zos ->
-            val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
-                folderUri,
-                DocumentsContract.getTreeDocumentId(folderUri)
-            )
-            val cursor = contentResolver.query(
-                childrenUri,
-                arrayOf(
-                    DocumentsContract.Document.COLUMN_DOCUMENT_ID,
-                    DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-                    DocumentsContract.Document.COLUMN_MIME_TYPE
-                ),
-                null, null, null
-            )
-            cursor?.use {
-                while (it.moveToNext()) {
-                    val docId = it.getString(0)
-                    val name = it.getString(1)
-                    val mimeType = it.getString(2) ?: ""
+        val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
+            folderUri,
+            DocumentsContract.getTreeDocumentId(folderUri)
+        )
+        val cursor = contentResolver.query(
+            childrenUri,
+            arrayOf(
+                DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                DocumentsContract.Document.COLUMN_MIME_TYPE
+            ),
+            null, null, null
+        )
 
-                    if (mimeType.startsWith("image/")) {
-                        val docUri = DocumentsContract.buildDocumentUriUsingTree(folderUri, docId)
-                        contentResolver.openInputStream(docUri)?.use { inputStream ->
-                            zos.putNextEntry(ZipEntry(name))
-                            inputStream.copyTo(zos)
-                            zos.closeEntry()
-                        }
-                    }
+        val imageFiles = mutableListOf<Triple<String, String, String>>()
+        cursor?.use {
+            while (it.moveToNext()) {
+                val docId = it.getString(0)
+                val name = it.getString(1)
+                val mimeType = it.getString(2) ?: ""
+                if (mimeType.startsWith("image/")) {
+                    imageFiles.add(Triple(docId, name, mimeType))
+                }
+            }
+        }
+
+        imageFiles.sortBy { it.second }
+        val filesToZip = if (maxFiles != null) imageFiles.take(maxFiles) else imageFiles
+
+        ZipOutputStream(FileOutputStream(zipFile)).use { zos ->
+            for ((docId, name, _) in filesToZip) {
+                val docUri = DocumentsContract.buildDocumentUriUsingTree(folderUri, docId)
+                contentResolver.openInputStream(docUri)?.use { inputStream ->
+                    zos.putNextEntry(ZipEntry(name))
+                    inputStream.copyTo(zos)
+                    zos.closeEntry()
                 }
             }
         }
