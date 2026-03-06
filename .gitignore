@@ -16,3 +16,5 @@ gradke
 .externalNativeBuild
 .cxx
 local.properties
+keystore.properties
+*.jks
